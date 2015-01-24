@@ -1,7 +1,5 @@
-var id_app = [2866099, 4195289, 4195287, 4195284, 4161477, 4161462, 4149350, 4149349, 4149336, 2394133, 3043953];
-var apiID_index = Math.floor(Math.random() * (id_app.length));
 VK.init({
-    apiId: id_app[apiID_index] // ID вашего приложения VK
+    apiId: 654647 // ID вашего приложения VK
 });
 
 var membersGroups = []; // массив участников группы
