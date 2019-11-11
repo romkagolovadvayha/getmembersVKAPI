@@ -1,12 +1,14 @@
 <!doctype html>
 <html lang="ru">
-	<head>
-		<script src="http://vk.com/js/api/openapi.js" type="text/javascript"></script>
-		<script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
-	</head>
-	<body>
-	<div class="group_info"></div>
-	<div class="member_ids"></div>
-	<script src="/getmembersvkapi.js"></script>
-	</body>
+        <head>
+                <script src="http://vk.com/js/api/openapi.js" type="text/javascript"></script>
+        </head>
+        <body>
+                <div class="group_info">
+                        Название группы: <span id="group_name"></span><br/>
+                        Участников: <span id="members_count">0</span>
+                </div>
+                <div id="progress"></div>
+                <script src="/getmembersvkapi.js"></script>
+        </body>
 </html>
