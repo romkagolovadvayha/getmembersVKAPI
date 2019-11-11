@@ -2,43 +2,42 @@ VK.init({
     apiId: 654647 // ID вашего приложения VK
 });
 
-var membersGroups = []; // массив участников группы
-getMembers(20629724);
+var Group = {};
+Group.members = [];
+Group.get = function (group_id, callback) {
+    VK.Api.call('groups.getById', {group_id: group_id, fields: 'photo_50,members_count', v: '5.27'}, function (r) {
+        if (!r.response) {
+            return false;
+        }
+        callback(group_id, r.response);
+    });
+};
+Group.getMembers = function (group_id, members_count, callback) {
+    VK.Api.call("execute.getMembers", {}, function (data) {
+        if (!data.response) {
+            alert(data.error.error_msg); // в случае ошибки выведем её
+            return false;
+        }
+        Group.members = Group.members.concat(JSON.parse("[" + data.response + "]")); // запишем это в массив
+        callback(Group.members, members_count);
 
-// получаем информацию о группе и её участников
-function getMembers(group_id) {
-	VK.Api.call('groups.getById', {group_id: group_id, fields: 'photo_50,members_count', v: '5.27'}, function(r) {
-			if(r.response) {
-				$('.group_info')
-				.html('<img src="' + r.response[0].photo_50 + '"/><br/>' 
-					+ r.response[0].name
-					+ '<br/>Участников: ' + r.response[0].members_count);
-				getMembers20k(group_id, r.response[0].members_count); // получем участников группы и пишем в массив membersGroups
-			}
-	});
-}
+        if (members_count <= Group.members.length) {
+            alert('Ура тест закончен! В массиве membersGroups теперь ' + Group.members.length + ' элементов.');
+            return false;
+        }
+        // если еще не всех участников получили
+        // задержка 0.333 с. после чего запустим еще раз
+        setTimeout(function () {
+            Group.getMembers(group_id, members_count);
+        }, 333);
+    });
+};
 
-// получаем участников группы, members_count - количество участников
-function getMembers20k(group_id, members_count) {
-	var code =  'var members = API.groups.getMembers({"group_id": ' + group_id + ', "v": "5.27", "sort": "id_asc", "count": "1000", "offset": ' + membersGroups.length + '}).items;' // делаем первый запрос и создаем массив
-			+	'var offset = 1000;' // это сдвиг по участникам группы
-			+	'while (offset < 25000 && (offset + ' + membersGroups.length + ') < ' + members_count + ')' // пока не получили 20000 и не прошлись по всем участникам
-			+	'{'
-				+	'members = members + "," + API.groups.getMembers({"group_id": ' + group_id + ', "v": "5.27", "sort": "id_asc", "count": "1000", "offset": (' + membersGroups.length + ' + offset)}).items;' // сдвиг участников на offset + мощность массива
-				+	'offset = offset + 1000;' // увеличиваем сдвиг на 1000
-			+	'};'
-			+	'return members;'; // вернуть массив members
-	
-	VK.Api.call("execute", {code: code}, function(data) {
-		if (data.response) {
-			membersGroups = membersGroups.concat(JSON.parse("[" + data.response + "]")); // запишем это в массив
-			$('.member_ids').html('Загрузка: ' + membersGroups.length + '/' + members_count);
-			if (members_count >  membersGroups.length) // если еще не всех участников получили
-				setTimeout(function() { getMembers20k(group_id, members_count); }, 333); // задержка 0.333 с. после чего запустим еще раз
-			else // если конец то
-				alert('Ура тест закончен! В массиве membersGroups теперь ' + membersGroups.length + ' элементов.');
-		} else {
-			alert(data.error.error_msg); // в случае ошибки выведем её
-		}
-	});
-}
+Group.get(20629724, function (group_id, response) {
+    document.getElementById('group_name').innerHTML = response[0].name;
+    document.getElementById('members_count').innerHTML = response[0].members_count;
+    // получем участников группы и пишем в массив membersGroups
+    Group.getMembers(group_id, response[0].members_count, function (members, members_full_count) {
+        document.getElementById('progress').innerHTML = 'Загрузка: ' + members.length + '/' + members_full_count;
+    });
+});
